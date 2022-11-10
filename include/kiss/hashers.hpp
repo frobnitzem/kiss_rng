@@ -1,12 +1,11 @@
 #pragma once
 
 #include <cstdint>
-#include <helpers/cuda_helpers.cuh>
+#include <SYCL/sycl.hpp>
 
 /*! \brief hash functions
 */
-namespace kiss
-{
+namespace kiss {
 
 /*! \brief hash functions
 */
@@ -15,8 +14,7 @@ namespace hashers
 
 /*! \brief hash function proposed by NVIDIA
 */
-class NvidiaHash
-{
+class NvidiaHash {
 
 public:
     using key_type  = std::uint32_t;
@@ -26,16 +24,14 @@ public:
     * \tparam T key type
     */
     template<class T>
-    HOSTDEVICEQUALIFIER INLINEQUALIFIER
     static hash_type hash(T) = delete;
 
     /*! \brief hash function
     * \param[in] x key to be hashed
     * \return hash of \c x
     */
-    HOSTDEVICEQUALIFIER INLINEQUALIFIER
-    static hash_type hash(key_type x) noexcept
-    {
+    inline
+    static hash_type hash(key_type x) noexcept {
         x = (x + 0x7ed55d16) + (x << 12);
         x = (x ^ 0xc761c23c) ^ (x >> 19);
         x = (x + 0x165667b1) + (x <<  5);
@@ -50,8 +46,7 @@ public:
 
 /*! \brief hash function proposed by Mueller
 */
-class MuellerHash
-{
+class MuellerHash {
 
 public:
     using key_type  = std::uint32_t;
@@ -61,14 +56,13 @@ public:
     * \tparam T key type
     */
     template<class T>
-    HOSTDEVICEQUALIFIER INLINEQUALIFIER
     static constexpr hash_type hash(T) = delete;
 
     /*! \brief hash function
     * \param[in] x key to be hashed
     * \return hash of \c x
     */
-    HOSTDEVICEQUALIFIER INLINEQUALIFIER
+    inline
     static constexpr hash_type hash(key_type x) noexcept
     {
         x = ((x >> 16) ^ x) * 0x45d9f3b;
@@ -85,8 +79,7 @@ public:
  * \tparam K key type (\c std::uint32_t or std::uint64_t)
 */
 template<class K>
-class MurmurHash
-{
+class MurmurHash {
 
 public:
     using key_type  = K;
@@ -98,9 +91,8 @@ public:
     * \return hash of \c x
     */
     template<class T>
-    HOSTDEVICEQUALIFIER INLINEQUALIFIER
-    static constexpr T hash(T x) noexcept
-    {
+    inline
+    static constexpr T hash(T x) noexcept {
         static_assert(
             std::is_same<T, key_type>::value,
             "invalid key type");
@@ -113,7 +105,7 @@ private:
     * \param[in] x key to be hashed
     * \return hash of \c x
     */
-    HOSTDEVICEQUALIFIER INLINEQUALIFIER
+    inline
     static constexpr std::uint32_t hash_(std::uint32_t x) noexcept
     {
         x ^= x >> 16;
@@ -128,7 +120,7 @@ private:
     * \param[in] x key to be hashed
     * \return hash of \c x
     */
-    HOSTDEVICEQUALIFIER INLINEQUALIFIER
+    inline
     static constexpr std::uint64_t hash_(std::uint64_t x) noexcept
     {
         x ^= x >> 33;
@@ -146,8 +138,7 @@ private:
  * \tparam H hash type
 */
 template<class K, class H = std::uint32_t>
-class IdentityMap
-{
+class IdentityMap {
 
 public:
     using key_type  = K;
@@ -165,9 +156,8 @@ public:
     * \param[in] x key to be hashed
     * \return hash of \c x
     */
-    HOSTDEVICEQUALIFIER INLINEQUALIFIER
-    static constexpr hash_type hash(key_type x) noexcept
-    {
+    inline
+    static constexpr hash_type hash(key_type x) noexcept {
         return hash_type{x};
     }
 

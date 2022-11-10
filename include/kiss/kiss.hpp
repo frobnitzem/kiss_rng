@@ -1,38 +1,33 @@
 #pragma once
 
 #include <cstdint>
-#include <helpers/cuda_helpers.cuh>
-#include "hashers.cuh"
+#include <SYCL/sycl.hpp>
+#include "hashers.hpp"
 
-namespace kiss
-{
+namespace kiss {
 
 /*! \brief KISS random number generator for host and CUDA device
 * \tparam T base type of RNG state (\c std::uint32_t or \c std::uint64_t)
 */
 template<class T>
-class Kiss
-{
+class Kiss {
     static_assert(
         std::is_same<T, std::uint32_t>::value ||
-        std::is_same<T, std::uint64_t>::value,
-        "invalid base type");
+        std::is_same<T, std::uint64_t>::value, "invalid base type");
 
 public:
     /*! \brief constructor
      * \param[in] random seed for initial state
      */
-    HOSTDEVICEQUALIFIER INLINEQUALIFIER
-    constexpr explicit Kiss(T seed) noexcept
-    {
+    inline
+    constexpr explicit Kiss(T seed) noexcept {
         using Hasher = hashers::MurmurHash<T>;
 
         w = !seed ? 4294967295 : seed;
 
         // scramble until the initial state looks good
         // #pragma unroll 8 // throws warning in host code
-        for (std::uint8_t iter = 0; iter < 8; iter++)
-        {
+        for (std::uint8_t iter = 0; iter < 8; iter++) {
             x = Hasher::hash(w);
             y = Hasher::hash(x);
             z = Hasher::hash(y);
@@ -48,8 +43,7 @@ public:
      * \return random number
      */
     template<class Result>
-    HOSTDEVICEQUALIFIER INLINEQUALIFIER
-    constexpr Result next() noexcept;
+    inline constexpr Result next() noexcept;
 
 private:
     T x; //< partial state x
@@ -64,9 +58,8 @@ private:
 */
 template< >
 template< >
-HOSTDEVICEQUALIFIER INLINEQUALIFIER
-constexpr std::uint32_t Kiss<std::uint32_t>::next<std::uint32_t>() noexcept
-{
+inline
+constexpr std::uint32_t Kiss<std::uint32_t>::next<std::uint32_t>() noexcept {
     // lcg
     x = 69069 * x + 12345;
 
@@ -89,9 +82,8 @@ constexpr std::uint32_t Kiss<std::uint32_t>::next<std::uint32_t>() noexcept
 */
 template< >
 template< >
-HOSTDEVICEQUALIFIER INLINEQUALIFIER
-constexpr std::uint64_t Kiss<std::uint64_t>::next<std::uint64_t>() noexcept
-{
+inline
+constexpr std::uint64_t Kiss<std::uint64_t>::next<std::uint64_t>() noexcept {
     // lcg
     x = 6906969069ULL * x + 1234567;
 
@@ -115,21 +107,16 @@ constexpr std::uint64_t Kiss<std::uint64_t>::next<std::uint64_t>() noexcept
 */
 template< >
 template< >
-HOSTDEVICEQUALIFIER INLINEQUALIFIER
-constexpr float Kiss<std::uint32_t>::next<float>() noexcept
-{
+inline constexpr float Kiss<std::uint32_t>::next<float>() noexcept {
     std::uint32_t p = (next<std::uint32_t>() >> 9) | 0x3F800000;
 
     //float q = reinterpret_cast<float&>(p);
     // TODO waiting for C++20 std::bit_cast
-    union reinterpreter_t
-    {
+    union reinterpreter_t {
         std::uint32_t from;
         float to;
 
-        HOSTDEVICEQUALIFIER
         constexpr reinterpreter_t(std::uint32_t from_) noexcept : from(from_) {}
-
     } reinterpreter(p);
 
     float q = reinterpreter.to;
@@ -141,9 +128,7 @@ constexpr float Kiss<std::uint32_t>::next<float>() noexcept
 */
 template< >
 template< >
-HOSTDEVICEQUALIFIER INLINEQUALIFIER
-constexpr double Kiss<std::uint32_t>::next<double>() noexcept
-{
+inline constexpr double Kiss<std::uint32_t>::next<double>() noexcept {
     std::uint32_t a = next<std::uint32_t>() >> 6;
     std::uint32_t b = next<std::uint32_t>() >> 5;
     double q = (a * 134217728.0 + b) / 9007199254740992.0;
