@@ -16,6 +16,11 @@ set(DEFAULT_BUILD_TYPE "Release")
 set(CMAKE_SYCL_FLAGS "${CMAKE_SYCL_FLAGS} -std=c++17")
 find_package(hipSYCL CONFIG REQUIRED)
 find_package(KissRng CONFIG REQUIRED)
+
+# find_package alternative: CMake package manager
+#include(cmake/CPM.cmake)
+#CPMAddPackage("gh:frobnitzem/kiss_rng@0.2")
+
 find_package(OpenMP REQUIRED)
 
 add_executable(example "${CMAKE_CURRENT_SOURCE_DIR}/example.cpp")

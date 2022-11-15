@@ -34,7 +34,7 @@ class normal {
                         sycl::access::address_space::private_space>;
         uniform<T> U;
         T x   = U(rng);
-        T rho = sycl::sqrt(- 2.0 * sycl::log(1.0 - x));
+        T rho = sycl::sqrt(- 2.0 * sycl::log1p(-x));
         T th  = U(rng) * 2*M_PI;
         a = rho*sycl::sincos(th, Ptr(&x));
         b = rho*x;

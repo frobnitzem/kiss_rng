@@ -21,6 +21,7 @@ find_package(hipSYCL CONFIG REQUIRED)
 ###################################################################################################
 # - define target   -------------------------------------------------------------------------------
 add_library(kiss INTERFACE)
+add_library(KissRng::kiss ALIAS kiss) # for CPM imports
 FILE(GLOB KISS_HEADERS include/kiss/*.hpp)
 target_compile_features(kiss INTERFACE cxx_std_17)
 target_include_directories(kiss INTERFACE
