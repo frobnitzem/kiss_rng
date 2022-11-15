@@ -1,5 +1,6 @@
 #include <iostream>
 #include <kiss/kiss.hpp>
+#include <kiss/distributions.hpp>
 
 template<class T, class Rng>
 inline void uniform_distribution(
@@ -12,20 +13,20 @@ inline void uniform_distribution(
       const std::uint64_t n = data.get_count();
       sycl::accessor out(data, cgh, sycl::write_only, sycl::no_init);
 
-      cgh.parallel_for(sycl::nd_range({4096, 32}),
-      [=](sycl::nd_item<1> it) {
-        const std::uint32_t tid = it.get_global_id(0);
-
-        // generate initial local seed per thread
-        const std::uint32_t local_seed =
-            kiss::hashers::MurmurHash<std::uint32_t>::hash(seed+tid);
-
-        Rng rng{local_seed};
+      //cgh.parallel_for(sycl::nd_range({4096, 32}),
+      //    [=](sycl::nd_item<1> it) {
+      cgh.parallel_for(sycl::range(4096),
+          [=](sycl::item<1> it) {
+        //const std::uint32_t tid = it.get_global_id(0);
+        const std::uint32_t tid = it[0];
+        Rng rng{it, seed};
 
         // grid-stride loop
-        const auto grid_stride = it.get_global_range(0);
+        //const auto grid_stride = it.get_global_range(0);
+        const auto grid_stride = it.get_range(0);
         for(std::uint64_t i = tid; i < n; i += grid_stride) {
             // generate random element and write to output
+            //out[i] = kiss::dist::uniform<T>(rng);
             out[i] = rng.template next<T>();
         }
       });
@@ -47,6 +48,11 @@ int main(int argc, char *argv[]) {
 
     // random seed
     static constexpr std::uint32_t seed = 42;
+
+    // illustrate using on host with
+    rng_t gen(seed);
+    std::normal_distribution<float> norm;
+    printf("Normal: %f\n", norm(gen));
 
     // allocate memory for the result
     sycl::buffer<data_t, 1> data(n);

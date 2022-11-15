@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 #include <SYCL/sycl.hpp>
 #include "hashers.hpp"
 
@@ -16,6 +17,10 @@ class Kiss {
         std::is_same<T, std::uint64_t>::value, "invalid base type");
 
 public:
+    using result_type = T;
+    static constexpr T min() { return 0; }
+    static constexpr T max() { return std::numeric_limits<T>::max(); }
+
     /*! \brief constructor
      * \param[in] random seed for initial state
      */
@@ -44,6 +49,28 @@ public:
      */
     template<class Result>
     inline constexpr Result next() noexcept;
+
+    inline T operator()() noexcept {
+        return next<T>();
+    }
+
+    /** Constructor allowing integer increments to seed
+     *  and providing a different random sequence per work item.
+     */
+    template <int ND> inline
+    constexpr explicit Kiss(sycl::nd_item<ND> it, T seed) noexcept 
+        : Kiss( hashers::MurmurHash<T>::hash(
+                        hashers::MurmurHash<T>::hash(seed)
+                        + (T)it.get_global_linear_id() )) {}
+
+    /** Constructor allowing integer increments to seed
+     *  and providing a different random sequence per work item.
+     */
+    template <int ND> inline
+    constexpr explicit Kiss(sycl::item<ND> it, T seed) noexcept 
+        : Kiss( hashers::MurmurHash<T>::hash(
+                        hashers::MurmurHash<T>::hash(seed)
+                        + (T)it.get_linear_id() )) {}
 
 private:
     T x; //< partial state x

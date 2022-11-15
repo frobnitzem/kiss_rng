@@ -6,17 +6,26 @@ endfunction()
 # e.g. install_libs(TARGETS mpiwrapper testhelpers HEADERS include/a.h include/b.h)
 function(install_libs)
     set(multiValueArgs TARGETS HEADERS)
-    cmake_parse_arguments(INSTALL_LIBS "" "" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(INSTALL_LIBS "" "HEADER_DIR" "${multiValueArgs}" ${ARGN})
     set(targets ${INSTALL_LIBS_TARGETS})
     set(pkg ${PROJECT_NAME})
-    message(NOTICE "Will install library targets (${targets}) and headers (${INSTALL_LIBS_HEADERS}) under package name ${pkg}")
+    message(NOTICE "${INSTALL_LIBSHEADER_DIR} ${INSTALL_LIBS_HEADER_DIR}")
+    if(DEFINED INSTALL_LIBSHEADER_DIR)
+        set(HEADER_DIR "${INSTALL_LIBSHEADER_DIR}")
+    elseif(DEFINED INSTALL_LIBS_HEADER_DIR)
+        set(HEADER_DIR "${INSTALL_LIBS_HEADER_DIR}")
+    else()
+        set(HEADER_DIR "${pkg}")
+    endif()
+    message(NOTICE "Will install library targets (${targets}) and headers (${INSTALL_LIBS_HEADERS} to ${HEADER_DIR}) under package name ${pkg}")
 
     # Attach these libraries to the list of exported libs.
     install(TARGETS ${targets}
             DESTINATION lib
             EXPORT "${pkg}Targets")
 
-    install(FILES ${INSTALL_LIBS_HEADERS} DESTINATION include/${pkg})
+    install(FILES ${INSTALL_LIBS_HEADERS}
+            DESTINATION "include/${HEADER_DIR}")
   
     # Note: we choose the following location for cmake dependency info:
     # <prefix>/lib/cmake/${PKG}/

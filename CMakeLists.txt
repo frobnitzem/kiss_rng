@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
-project(kiss VERSION 0.0.1 LANGUAGES CXX)
+project(KissRng VERSION 0.0.1 LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 include(install)
 
@@ -30,4 +30,4 @@ target_include_directories(kiss INTERFACE
 ###################################################################################################
 # - build options ---------------------------------------------------------------------------------
 
-install_libs(TARGETS kiss HEADERS ${KISS_HEADERS})
+install_libs(TARGETS kiss HEADERS ${KISS_HEADERS} HEADER_DIR kiss)
