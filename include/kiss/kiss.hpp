@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <limits>
-#include <SYCL/sycl.hpp>
+#include <sycl/sycl.hpp>
 #include "hashers.hpp"
 
 namespace kiss {

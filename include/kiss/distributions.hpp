@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <SYCL/sycl.hpp>
+#include <sycl/sycl.hpp>
 #include "hashers.hpp"
 
 namespace kiss {
